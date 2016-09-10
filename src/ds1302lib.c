@@ -29,16 +29,16 @@
  */
 static void transfer_data(uint8_t data, uint8_t *dw_enable)
 {
-    for (int i = 0; i < 8; ++i) {
+	for (int i = 0; i < 8; ++i) {
 		if (data & (1 << i)) {
-	    	WORKING_PORT |= (1 << IO_BIT);
+			WORKING_PORT |= (1 << IO_BIT);
 		} else {
-	    	WORKING_PORT &= ~(1 << IO_BIT);
+			WORKING_PORT &= ~(1 << IO_BIT);
 		}
 		WORKING_PORT |= (1 << CLK_BIT);
 		_delay_us(1);
 		WORKING_PORT &= ~(1 << CLK_BIT);
-    }
+	}
 }
 
 /* this function set value in register
@@ -48,9 +48,9 @@ static void transfer_data(uint8_t data, uint8_t *dw_enable)
  * */
 static void set_value(uint8_t data)
 {
-    transfer_data(data, 0);
-    /* stop transmission & disable chip */
-    WORKING_PORT &= ~(1 << CE_BIT);
+	transfer_data(data, 0);
+	/* stop transmission & disable chip */
+	WORKING_PORT &= ~(1 << CE_BIT);
 }
 
 /* this function set register address 
@@ -62,9 +62,9 @@ static void set_value(uint8_t data)
 static void set_address(uint8_t address, uint8_t re)
 {
 	WORKING_DDR |= (1 << CE_BIT) | (1 << CLK_BIT) | (1 << IO_BIT);
-    WORKING_PORT |= (1 << CE_BIT); /* enable chip */
-    _delay_us(1);
-    if (!re)
+	WORKING_PORT |= (1 << CE_BIT); /* enable chip */
+	_delay_us(1);
+	if (!re)
 		/* init write operation */
 		WORKING_PORT &= ~(1 << IO_BIT);
 	else
@@ -73,11 +73,11 @@ static void set_address(uint8_t address, uint8_t re)
 	/* transfer register address */
 	transfer_data(address, 0); 
 	/* specifies transfer or receive data on clock/calendar instead RAM */
-    WORKING_PORT &= ~(1 << IO_BIT); 	
+	WORKING_PORT &= ~(1 << IO_BIT); 	
 	/* this bit must be a logic 1 for work chip */
-    WORKING_PORT |= (1 << IO_BIT); 
+	WORKING_PORT |= (1 << IO_BIT); 
 	/* set PIN to logic 0 */
-    WORKING_PORT &= ~(1 << IO_BIT);	
+	WORKING_PORT &= ~(1 << IO_BIT);	
 }
 
 /* this function sets: hours, minutes, seconds */
@@ -95,5 +95,5 @@ int main()
 	ds1302time.sec = 0;
 	ds1302time.hour = 22;
 	ds1302_set_time(ds1302time);
-    return 0;
+	return 0;
 }
