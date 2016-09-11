@@ -17,7 +17,6 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
  * DEALINGS IN THE SOFTWARE.
  * */
-
 #define F_CPU 8000000
 #include <avr/io.h>
 #include <util/delay.h>
@@ -44,6 +43,6 @@ typedef struct
 	uint8_t year;
 } ds1302time_t;
 
-// void ds1302_set_time(ds1302time_t data);
-void ds1302_get_time();
+void ds1302_set_time(uint8_t value, char value_type);
+void ds1302_get_time(ds1302time_t *struct_t);
 
