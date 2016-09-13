@@ -19,16 +19,20 @@
  * */
 #include "ds1302lib.h"
 
+#define SEC_W_ADDRESS  0x80
+#define MIN_W_ADDRESS  0x82
+#define HRS_W_ADDRESS  0x84
+#define DATE_W_ADDRESS 0x86
+#define MNTH_W_ADDRESS 0x88
+#define DAY_W_ADDRESS  0x8a
+#define YEAR_W_ADDRESS 0x8c
+
 /* this function transfers data (register address or value)
  * by 3-wire serial interface
  * parameters:
- * data - transsmission data,
- * value_type - type of transsmit value, may be:
- * -1 - not defined,
- * 0 - time,
- * 1 - date
+ * data - transsmission data
  * */
-static void transfer_data(uint8_t data, uint8_t value_type)
+static void transfer_data(uint8_t data)
 {
 	for (int i = 0; i < 8; ++i) {
 		if (data & (1 << i)) {
@@ -52,9 +56,9 @@ static void transfer_data(uint8_t data, uint8_t value_type)
  * 0 - time,
  * 1 - date
  * */
-static void set_value(uint8_t data, uint8_t value_type)
+static void set_value(uint8_t data)
 {
-	transfer_data(data, value_type);
+	transfer_data(data);
 	/* stop transmission & disable chip */
 	WORKING_PORT &= ~(1 << CE_BIT);
 }
@@ -79,7 +83,7 @@ static void set_address(uint8_t address, char read_enable)
 		/* init read operation */
 		WORKING_PORT |= (1 << IO_BIT);
 	/* transfer register address */
-	transfer_data(address, -1); 
+	transfer_data(address); 
 	/* specifies transfer or receive data on clock/calendar instead RAM */
 	WORKING_PORT &= ~(1 << IO_BIT); 	
 	/* this bit must be a logic 1 for work chip */
@@ -99,20 +103,39 @@ static void set_address(uint8_t address, char read_enable)
  * t_format - format of time (12 if t_format = 1 otherwise 24),
  * t_day - time of days (PM if t_day = 1 otherwise AM).
  * */
-void ds1302_set_time(uint8_t value, char value_type, uint8_t t_format, uint8_t t_day)
+void ds1302_set_time(uint8_t value, char value_type, uint8_t t_format,
+					 uint8_t t_day)
 {
 	switch(value_type)
 	{
 		case 's':
-			set_address(0x80, 0);
+			/* set 7 bit in 0 for enable chip */
+			value &= ~(1 << 7);
+			set_address(SEC_W_ADDRESS, 0);
 			break;
 		case 'm':
-			set_address(0x82, 0);
+			set_address(MIN_W_ADDRESS, 0);
+			break;
+		case 'h':
+			/* set time format 12 or 24 */
+			if (t_format) {
+				value |= (1 << 7);
+				/* set time of days AM or PM
+				 * will work only if uses 
+				 * 12-hours time format */
+				if (t_day)
+					value |= (1 << 5);
+				else
+					value &= ~(1 << 5);
+			} else {
+				value &= ~(1 << 7);
+			}
+			set_address(HRS_W_ADDRESS, 0);
 			break;
 		default:
 			break;
 	}
-	set_value(value, 0);
+	set_value(value);
 }
 
 /* this function sets date to the register
@@ -127,6 +150,15 @@ void ds1302_set_time(uint8_t value, char value_type, uint8_t t_format, uint8_t t
  * */
 void ds1302_set_date(uint8_t value, char value_type)
 {
+	switch(value_type)
+	{
+		case 'd':
+			set_address(DATE_W_ADDRESS, 0);
+			break;
+		default:
+			break;
+	}
+	set_value(value);
 }
 
 /* this function get time from chip */

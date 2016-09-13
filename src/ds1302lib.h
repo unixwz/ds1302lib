@@ -43,6 +43,8 @@ typedef struct
 	uint8_t year;
 } ds1302time_t;
 
-void ds1302_set_time(uint8_t value, char value_type);
+void ds1302_set_time(uint8_t value, char value_type, uint8_t t_format, 
+		             uint8_t t_day);
+void ds1302_set_date(uint8_t value, char value_type);
 void ds1302_get_time(ds1302time_t *struct_t);
 
