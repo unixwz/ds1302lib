@@ -19,6 +19,7 @@
  * */
 #include "ds1302lib.h"
 
+/* addresses for write */
 #define SEC_W_ADDRESS  0x80
 #define MIN_W_ADDRESS  0x82
 #define HRS_W_ADDRESS  0x84
@@ -26,6 +27,15 @@
 #define MNTH_W_ADDRESS 0x88
 #define DAY_W_ADDRESS  0x8a
 #define YEAR_W_ADDRESS 0x8c
+/* addresses for read */
+#define SEC_R_ADDRESS  0x81
+#define MIN_R_ADDRESS  0x83
+#define HRS_R_ADDRESS  0x85
+#define DATE_R_ADDRESS 0x87
+#define MNTH_R_ADDRESS 0x89
+#define DAY_R_ADDRESS  0x8b
+#define YEAR_R_ADDRESS 0x8d
+
 
 /* this function transfers data (register address or value)
  * by 3-wire serial interface
@@ -51,16 +61,30 @@ static void transfer_data(uint8_t data)
  *
  * parameters: 
  * data - transsmision data
- * value_type - type of transsmit value, may be:
- * -1 - not defined,
- * 0 - time,
- * 1 - date
  * */
 static void set_value(uint8_t data)
 {
 	transfer_data(data);
 	/* stop transmission & disable chip */
 	WORKING_PORT &= ~(1 << CE_BIT);
+}
+
+/* this function gets saved data from chip 
+ * and return the resulting value */
+static uint8_t get_value()
+{
+	uint8_t buffer = 0;
+	for (int i = 0; i < 8; ++i) {
+		if (PINB & (1 << IO_BIT))
+			buffer |= (1 << i);
+		else
+			buffer &= ~(1 << i);
+		WORKING_PORT |= (1 << CLK_BIT);
+		_delay_us(1);
+		WORKING_PORT &= ~(1 << CLK_BIT);
+	}
+	WORKING_PORT &= ~(1 << CE_BIT);
+	return buffer;
 }
 
 /* this function set register address for setting value
@@ -71,7 +95,7 @@ static void set_value(uint8_t data)
  * 0 - write opeartion,
  * 1 - read operation
  * */
-static void set_address(uint8_t address, char read_enable)
+static void set_address(uint8_t address, uint8_t read_enable)
 {
 	WORKING_DDR |= (1 << CE_BIT) | (1 << CLK_BIT) | (1 << IO_BIT);
 	WORKING_PORT |= (1 << CE_BIT); /* enable chip */
@@ -144,8 +168,8 @@ void ds1302_set_time(uint8_t value, char value_type, uint8_t t_format,
  * value - value which will set to register
  * value_type - type of value, may be:
  * d - date,
- * m - month
- * w - day of week
+ * m - month,
+ * w - day of week,
  * y - year
  * */
 void ds1302_set_date(uint8_t value, char value_type)
@@ -161,9 +185,16 @@ void ds1302_set_date(uint8_t value, char value_type)
 	set_value(value);
 }
 
-/* this function get time from chip */
+/* this function get time from chip 
+ * parameters:
+ * struct_t - user structur for storage recieved data
+ * */
 void ds1302_get_time(ds1302time_t *struct_t)
 {
-	struct_t->min = 8;
-	struct_t->hour = 5;
+	uint8_t buffer = 0;
+	/* read seconds */
+	set_address(HRS_R_ADDRESS, 1);
+	buffer = get_value();
+	struct_t->hour = buffer;
+	buffer += 1;
 }

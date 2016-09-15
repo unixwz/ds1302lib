@@ -17,15 +17,13 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
  * DEALINGS IN THE SOFTWARE.
  * */
-#define F_CPU 8000000
-#include <avr/io.h>
-#include <util/delay.h>
 
 /* defenition port & bits for 
  * data transfer with ds1302 
  */
 #define WORKING_DDR  DDRB
 #define WORKING_PORT PORTB
+#define WORKING_PIN  PINB
 #define CLK_BIT 0 /* sync signal */
 #define CE_BIT  1 /* counte enable */
 #define IO_BIT  2 /* input-output */
