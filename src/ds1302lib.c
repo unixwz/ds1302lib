@@ -198,5 +198,4 @@ void ds1302_get_time(ds1302time_t *struct_t)
 	set_address(HRS_R_ADDRESS, 1);
 	buffer = get_value();
 	struct_t->hour = buffer;
-	buffer += 1;
 }
