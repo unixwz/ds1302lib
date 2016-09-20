@@ -74,6 +74,8 @@ static void set_value(uint8_t data)
 static uint8_t get_value()
 {
 	uint8_t buffer = 0;
+	/* set PIN as output for receive data */
+	WORKING_DDR &= ~(1 << IO_BIT);
 	for (int i = 0; i < 8; ++i) {
 		if (PINB & (1 << IO_BIT))
 			buffer |= (1 << i);
