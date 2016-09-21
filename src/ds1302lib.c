@@ -67,6 +67,7 @@ static void set_value(uint8_t data)
 	transfer_data(data);
 	/* stop transmission & disable chip */
 	WORKING_PORT &= ~(1 << CE_BIT);
+	WORKING_PORT &= ~(1 << IO_BIT);
 }
 
 /* this function gets saved data from chip 
@@ -86,6 +87,7 @@ static uint8_t get_value()
 		WORKING_PORT &= ~(1 << CLK_BIT);
 	}
 	WORKING_PORT &= ~(1 << CE_BIT);
+	WORKING_DDR |= (1 << IO_BIT);
 	return buffer;
 }
 
@@ -109,13 +111,18 @@ static void set_address(uint8_t address, uint8_t read_enable)
 		/* init read operation */
 		WORKING_PORT |= (1 << IO_BIT);
 	/* transfer register address */
-	transfer_data(address); 
+	_delay_us(1);
+	transfer_data(address);
+	_delay_us(1); 
 	/* specifies transfer or receive data on clock/calendar instead RAM */
-	WORKING_PORT &= ~(1 << IO_BIT); 	
+	WORKING_PORT &= ~(1 << IO_BIT); 
+	_delay_us(1); 	
 	/* this bit must be a logic 1 for work chip */
 	WORKING_PORT |= (1 << IO_BIT); 
+	_delay_us(1); 
 	/* set PIN to logic 0 */
-	WORKING_PORT &= ~(1 << IO_BIT);	
+	WORKING_PORT &= ~(1 << IO_BIT);
+	_delay_us(1); 	
 }
 
 /* this function sets time to the register.
@@ -134,9 +141,9 @@ void ds1302_set_time(uint8_t value, char value_type, uint8_t t_format,
 {
 	switch(value_type)
 	{
+		/* set 7 bit in 0 for enable chip */
+		value &= ~(1 << 7);
 		case 's':
-			/* set 7 bit in 0 for enable chip */
-			value &= ~(1 << 7);
 			set_address(SEC_W_ADDRESS, 0);
 			break;
 		case 'm':
@@ -198,4 +205,8 @@ void ds1302_get_time(ds1302time_t *struct_t)
 	set_address(HRS_R_ADDRESS, 1);
 	buffer = get_value();
 	struct_t->hour = buffer;
+	_delay_ms(10);
+	/* FIXME: Value comes with options 24/12 PM/AM etc... fix please 
+	 * 82 = 10000010 where 0000010 - value and 1 - option */
+	ds1302_set_time(struct_t->hour, 'm', 1, 0);
 }
