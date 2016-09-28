@@ -17,6 +17,7 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
  * DEALINGS IN THE SOFTWARE.
  * */
+
 #include "ds1302lib.h"
 
 /* addresses for write */
@@ -36,6 +37,23 @@
 #define DAY_R_ADDRESS  0x8b
 #define YEAR_R_ADDRESS 0x8d
 
+/* this function convert BCD code 
+ * to DEC code */
+uint8_t bcd_to_dec(uint8_t value)
+{
+    uint8_t dec_num = 0;
+    dec_num = ((value & 0xf0 ) >> 4) * 10 + (value & 0x0f);
+    return dec_num;
+}
+
+/* this function convert DEC code 
+ * to BCD code */
+uint8_t dec_to_bcd(uint8_t value)
+{
+    uint8_t bcd_num = 0;
+    bcd_num = ((value / 10) * 16) + (value % 10);
+    return bcd_num;
+}
 
 /* this function transfers data (register address or value)
  * by 3-wire serial interface
@@ -114,7 +132,8 @@ static void set_address(uint8_t address, uint8_t read_enable)
 	_delay_us(1);
 	transfer_data(address);
 	_delay_us(1); 
-	/* specifies transfer or receive data on clock/calendar instead RAM */
+	/* specifies transfer or receive data on clock/calendar 
+	 * instead RAM */
 	WORKING_PORT &= ~(1 << IO_BIT); 
 	_delay_us(1); 	
 	/* this bit must be a logic 1 for work chip */
@@ -130,14 +149,13 @@ static void set_address(uint8_t address, uint8_t read_enable)
  * parameters:
  * value - value which will set to register
  * value_type - type of value, may be:
- * s - seconds,
- * m - minutes,
- * h - hours.
- * t_format - format of time (12 if t_format = 1 otherwise 24),
- * t_day - time of days (PM if t_day = 1 otherwise AM).
+ * h - hours,
+ * d - date,
+ * m - month,
+ * w - day of week,
+ * y - year.
  * */
-void ds1302_set_time(uint8_t value, char value_type, uint8_t t_format,
-					 uint8_t t_day)
+void ds1302_set_time(uint8_t value, char value_type)
 {
 	switch(value_type)
 	{
@@ -151,12 +169,12 @@ void ds1302_set_time(uint8_t value, char value_type, uint8_t t_format,
 			break;
 		case 'h':
 			/* set time format 12 or 24 */
-			if (t_format) {
+			if (TIME_FORMAT) {
 				value |= (1 << 7);
 				/* set time of days AM or PM
 				 * will work only if uses 
 				 * 12-hours time format */
-				if (t_day)
+				if (TIME_OF_DAY)
 					value |= (1 << 5);
 				else
 					value &= ~(1 << 5);
@@ -168,30 +186,7 @@ void ds1302_set_time(uint8_t value, char value_type, uint8_t t_format,
 		default:
 			break;
 	}
-	set_value(value);
-}
-
-/* this function sets date to the register
- *
- * parameters:
- * value - value which will set to register
- * value_type - type of value, may be:
- * d - date,
- * m - month,
- * w - day of week,
- * y - year
- * */
-void ds1302_set_date(uint8_t value, char value_type)
-{
-	switch(value_type)
-	{
-		case 'd':
-			set_address(DATE_W_ADDRESS, 0);
-			break;
-		default:
-			break;
-	}
-	set_value(value);
+	set_value(dec_to_bcd(value));
 }
 
 /* this function get time from chip 
@@ -200,13 +195,30 @@ void ds1302_set_date(uint8_t value, char value_type)
  * */
 void ds1302_get_time(ds1302time_t *struct_t)
 {
-	uint8_t buffer = 0;
-	/* read seconds */
-	set_address(HRS_R_ADDRESS, 1);
-	buffer = get_value();
-	struct_t->hour = buffer;
-	_delay_ms(10);
-	/* FIXME: Value comes with options 24/12 PM/AM etc... fix please 
-	 * 82 = 10000010 where 0000010 - value and 1 - option */
-	ds1302_set_time(struct_t->hour, 'm', 1, 0);
+    uint8_t buffer = 0x00;
+    
+    /* read sec */
+    set_address(SEC_R_ADDRESS, 1);
+    buffer = get_value();
+    /* set 7 bit in 1 which set for enable chip */
+    buffer &= ~(1 << 7);
+    struct_t->sec = bcd_to_dec(buffer);
+    buffer = 0x00;
+    
+    /* read min */
+    set_address(MIN_R_ADDRESS, 1);
+    buffer = get_value();
+    struct_t->min = bcd_to_dec(buffer);
+    buffer = 0x00;
+    
+    /* read hours */
+    set_address(HRS_R_ADDRESS, 1);
+    buffer = get_value();
+    /* if 7-bit on buffer = 1
+     * then used 24 format of times
+     * clean this bit for correct value of hours */
+    if (buffer & (1 << 7))
+        buffer &= ~(1 << 7);
+    struct_t->hour = bcd_to_dec(buffer);
+    buffer = 0x00;
 }
