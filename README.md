@@ -12,12 +12,12 @@ ds1302_set_time() - provide write data to chip.
 This functio takes twi parameters:
 	- value - value which will set to register;
 	- value_type - type of value, may be:
-	sec - seconds,
-	min - minutes,
-	hrs - hours,
-	day - date,
-	mnt - month,
-	wd - day of week,
-	yr - year.
+	* sec - seconds,
+	* min - minutes,
+	* hrs - hours,
+	* day - date,
+	* mnt - month,
+	* wd - day of week,
+	* yr - year.
 
 
