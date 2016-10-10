@@ -37,6 +37,24 @@
 #define DAY_R_ADDRESS  0x8b
 #define YEAR_R_ADDRESS 0x8d
 
+/* length of str */
+uint8_t len(char *str)
+{
+	uint8_t i = 0;
+	for (i = 0; str[i] != '\0'; ++i)
+		++i;
+	return i;
+}
+
+/* compares two string */
+uint8_t str_cmp(char *str, char *pattern)
+{
+	for (int i = 0; (str[i] != '\n' && pattern[i] != '\n') && (str[i] == pattern[i]); ++i)
+		if (i == len(str))
+			return 1;
+	return 0;
+}
+
 /* this function convert BCD code 
  * to DEC code */
 uint8_t bcd_to_dec(uint8_t value)
@@ -149,26 +167,22 @@ static void set_address(uint8_t address, uint8_t read_enable)
  * parameters:
  * value - value which will set to register
  * value_type - type of value, may be:
- * h - hours,
- * d - date,
- * m - month,
- * w - day of week,
- * y - year.
+ * sec - seconds,
+ * min - minutes,
+ * hrs - hours,
+ * day - date,
+ * mnt - month,
+ * wd - day of week,
+ * yr - year.
  * */
-void ds1302_set_time(uint8_t value, char value_type)
+void ds1302_set_time(uint8_t value, char *value_type)
 {
-	switch(value_type)
-	{
-		/* set 7 bit in 0 for enable chip */
-		value &= ~(1 << 7);
-		case 's':
+	if (value_type && value) {
+		if (str_cmp(value_type, "sec"))
 			set_address(SEC_W_ADDRESS, 0);
-			break;
-		case 'm':
+		else if (str_cmp(value_type, "min"))
 			set_address(MIN_W_ADDRESS, 0);
-			break;
-		case 'h':
-			/* set time format 12 or 24 */
+		else if (str_cmp(value_type, "hrs")) {
 			if (TIME_FORMAT) {
 				value |= (1 << 7);
 				/* set time of days AM or PM
@@ -180,13 +194,11 @@ void ds1302_set_time(uint8_t value, char value_type)
 					value &= ~(1 << 5);
 			} else {
 				value &= ~(1 << 7);
-			}
+			} 
 			set_address(HRS_W_ADDRESS, 0);
-			break;
-		default:
-			break;
+		}
+		set_value(dec_to_bcd(value));
 	}
-	set_value(dec_to_bcd(value));
 }
 
 /* this function get time from chip 
