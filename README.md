@@ -21,4 +21,27 @@ This function takes two parameters:
   - yr - year.
   
 ## Examples
-...soon
+```c
+int main()
+{
+    /* variable (struct) for exchange data 
+     * with library */
+	ds1302time_t ds1302time;
+    /* setting time and date on ds1302 */
+    ds1302_set_time(0, "sec");
+	ds1302_set_time(57, "min");
+	ds1302_set_time(20, "hrs");
+	ds1302_set_time(11, "date");
+	ds1302_set_time(10, "mnt");
+	ds1302_set_time(16, "year");
+	while (1) {
+      /* reading data from ds1302 */
+      ds1302_get_time(&ds1302time);
+      /* ... your code ... */
+      /* displaying values */
+      draw_clock(ds1302time.hour, ds1302time.min, 0);
+      /* ... your code ... */
+	}
+	return 0;
+}
+```
