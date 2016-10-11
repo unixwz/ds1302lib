@@ -12,6 +12,7 @@ Function write data to struct, you can work with this values.
 
 ## Write data to DS1302RTC
 ds1302_set_time() - provide write data to chip.
+
 This function takes two parameters:
 - value - value which will set to register;
 - value_type - type of value, may be:
