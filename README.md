@@ -9,15 +9,16 @@ This function takes one parameter - pointer to structure (a type ds1302time_t) f
 
 ## Write data to DS1302RTC
 ds1302_set_time() - provide write data to chip.
-This functio takes twi parameters:
-	- value - value which will set to register;
-	- value_type - type of value, may be:
-	* sec - seconds,
-	* min - minutes,
-	* hrs - hours,
-	* day - date,
-	* mnt - month,
-	* wd - day of week,
-	* yr - year.
-
-
+This function takes two parameters:
+- value - value which will set to register;
+- value_type - type of value, may be:
+  - sec - seconds,
+  - min - minutes,
+  - hrs - hours,
+  - day - date,
+  - mnt - month,
+  - wd - day of week,
+  - yr - year.
+  
+## Examples
+...soon
