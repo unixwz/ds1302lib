@@ -170,10 +170,10 @@ static void set_address(uint8_t address, uint8_t read_enable)
  * sec - seconds,
  * min - minutes,
  * hrs - hours,
- * day - date,
+ * date - your date,
  * mnt - month,
  * wd - day of week,
- * yr - year.
+ * year - your year.
  * */
 void ds1302_set_time(uint8_t value, char *value_type)
 {
@@ -196,7 +196,15 @@ void ds1302_set_time(uint8_t value, char *value_type)
 				value &= ~(1 << 7);
 			} 
 			set_address(HRS_W_ADDRESS, 0);
-		}
+		} 
+		else if (str_cmp(value_type, "date"))
+			set_address(DATE_W_ADDRESS, 0);
+		else if (str_cmp(value_type, "mnt"))
+			set_address(MNTH_W_ADDRESS, 0);
+		else if (str_cmp(value_type, "day"))
+			set_address(DAY_W_ADDRESS, 0);
+		else if (str_cmp(value_type, "year"))
+			set_address(YEAR_W_ADDRESS, 0);
 		set_value(dec_to_bcd(value));
 	}
 }
@@ -232,5 +240,29 @@ void ds1302_get_time(ds1302time_t *struct_t)
     if (buffer & (1 << 7))
         buffer &= ~(1 << 7);
     struct_t->hour = bcd_to_dec(buffer);
+    buffer = 0x00;
+
+	/* read date */
+    set_address(DATE_R_ADDRESS, 1);
+    buffer = get_value();
+    struct_t->date = bcd_to_dec(buffer);
+    buffer = 0x00;
+
+	/* read month */
+    set_address(MNTH_R_ADDRESS, 1);
+    buffer = get_value();
+    struct_t->month = bcd_to_dec(buffer);
+    buffer = 0x00;
+	
+	/* read day of week */
+    set_address(DAY_R_ADDRESS, 1);
+    buffer = get_value();
+    struct_t->day = bcd_to_dec(buffer);
+    buffer = 0x00;
+	
+	/* read year */
+    set_address(YEAR_R_ADDRESS, 1);
+    buffer = get_value();
+    struct_t->year = bcd_to_dec(buffer);
     buffer = 0x00;
 }
