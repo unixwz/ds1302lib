@@ -29,7 +29,7 @@ This function takes two parameters:
 int main()
 {
     /* variable (struct) for exchange data 
-     * with library */
+     * with chip */
 	ds1302time_t ds1302time;
     /* setting time and date on ds1302 */
     ds1302_set_time(0, "sec");
