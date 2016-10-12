@@ -23,7 +23,18 @@ This function takes two parameters:
   - mnt - month,
   - wd - day of week,
   - yr - year.
-  
+ 
+## Settings
+For settings of library, you can edit header file (ds1302lib.h) which sets some parameters:
+- WORKING_DDR - Address or constant of DDR register (DDRB, DDRC etc.)
+- WORKING_PORT - Address or constant of PORT register (PORTB, PORTC etc.)
+- WORKING_PIN - Address or constant of PORT register (PINB, PINC etc.)
+- CLK_BIT - Bit number on WORKING_PORT for sending synch signal.
+- CE_BIT - Bit number on WORKING_PORT for sending control signal.
+- IO_BIT - Bit number on WORKING_PORT for sending and recieve data.
+- TIME_FORMAT - Time format, 24 (const=0) or 12 (const=1).
+- TIME_OF_DAY - Time of day, AM (const=0) or PM (const=1).
+
 ## Examples
 ```c
 int main()
