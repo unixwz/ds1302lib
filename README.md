@@ -60,3 +60,8 @@ int main()
 	return 0;
 }
 ```
+
+## License
+This software distributed as open source software. Under the MIT license.
+
+Author - Dmitry Buryakov (unixwz).
